@@ -1,0 +1,1567 @@
+
+import React, { useState, useMemo, useEffect } from 'react';
+import { 
+  ShoppingCart, Heart, Search, Star, X, Plus, Minus, 
+  Trash2, ArrowRight, CheckCircle2, ShieldCheck, Truck, 
+  SlidersHorizontal, Sparkles, Eye, Package, CreditCard, 
+  ShoppingBag, Clock, ArrowLeft, Send, Check, RefreshCw
+} from 'lucide-react';
+
+// Initial Mock Products with detailed specs and reviews
+const INITIAL_PRODUCTS = [
+  {
+    id: 1,
+    name: "Aura Studio Wireless Headphones",
+    category: "Electronics",
+    price: 199.99,
+    originalPrice: 249.99,
+    rating: 4.8,
+    reviewsCount: 342,
+    badge: "Bestseller",
+    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=700&auto=format&fit=crop&q=80",
+    description: "Premium spatial audio with active noise cancellation and up to 40 hours of battery life on a single charge.",
+    colors: ["#1F2937", "#E5E7EB", "#3B82F6"],
+    colorNames: ["Midnight Black", "Platinum Silver", "Deep Blue"],
+    sizes: ["One Size"],
+    inStock: true,
+    stockCount: 14,
+    userReviews: [
+      { id: 101, author: "Sarah M.", rating: 5, date: "2 days ago", comment: "The noise cancellation is phenomenal, battery easily lasted my transatlantic flight!" },
+      { id: 102, author: "David K.", rating: 4, date: "1 week ago", comment: "Great sound quality and comfortable ear cushions for long work sessions." }
+    ]
+  },
+  {
+    id: 2,
+    name: "Minimalist Chrono Watch",
+    category: "Accessories",
+    price: 145.00,
+    originalPrice: 180.00,
+    rating: 4.9,
+    reviewsCount: 189,
+    badge: "Sale",
+    image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=700&auto=format&fit=crop&q=80",
+    description: "Handcrafted Italian leather strap with sapphire crystal glass and precision quartz movement.",
+    colors: ["#78350F", "#1F2937"],
+    colorNames: ["Saddle Brown", "Onyx Black"],
+    sizes: ["38mm", "42mm"],
+    inStock: true,
+    stockCount: 8,
+    userReviews: [
+      { id: 103, author: "Elena R.", rating: 5, date: "3 days ago", comment: "Extremely elegant. Looks even more luxurious in person." }
+    ]
+  },
+  {
+    id: 3,
+    name: "Ergonomic Mechanical Keyboard",
+    category: "Electronics",
+    price: 129.50,
+    originalPrice: 159.00,
+    rating: 4.7,
+    reviewsCount: 512,
+    badge: "Trending",
+    image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=700&auto=format&fit=crop&q=80",
+    description: "Custom hot-swappable tactile switches with customizable RGB backlighting and solid aluminum frame.",
+    colors: ["#111827", "#F3F4F6"],
+    colorNames: ["Dark Slate", "Chalk White"],
+    sizes: ["75% Layout", "Full Size"],
+    inStock: true,
+    stockCount: 22,
+    userReviews: [
+      { id: 104, author: "Marcus T.", rating: 5, date: "Yesterday", comment: "The tactile feedback is so satisfying for programming!" }
+    ]
+  },
+  {
+    id: 4,
+    name: "Canvas Urban Daypack",
+    category: "Lifestyle",
+    price: 89.00,
+    originalPrice: 110.00,
+    rating: 4.6,
+    reviewsCount: 94,
+    badge: null,
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=700&auto=format&fit=crop&q=80",
+    description: "Weather-resistant 20L backpack featuring dedicated 16-inch laptop compartment and hidden anti-theft pockets.",
+    colors: ["#064E3B", "#374151", "#78350F"],
+    colorNames: ["Forest Green", "Charcoal", "Tobacco"],
+    sizes: ["20 Liters"],
+    inStock: true,
+    stockCount: 17,
+    userReviews: [
+      { id: 105, author: "Chloe L.", rating: 4, date: "4 days ago", comment: "Pockets are well thought out and it handles rain easily." }
+    ]
+  },
+  {
+    id: 5,
+    name: "Aerolight Running Sneakers",
+    category: "Footwear",
+    price: 135.00,
+    originalPrice: 165.00,
+    rating: 4.9,
+    reviewsCount: 420,
+    badge: "Popular",
+    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=700&auto=format&fit=crop&q=80",
+    description: "Engineered mesh upper paired with energy-returning foam cushioning for marathon-grade comfort.",
+    colors: ["#EF4444", "#1F2937", "#3B82F6"],
+    colorNames: ["Crimson Red", "Carbon Black", "Electric Blue"],
+    sizes: ["US 8", "US 9", "US 10", "US 11"],
+    inStock: true,
+    stockCount: 6,
+    userReviews: [
+      { id: 106, author: "Jason B.", rating: 5, date: "5 days ago", comment: "Super lightweight, like running on clouds. Fits true to size." }
+    ]
+  },
+  {
+    id: 6,
+    name: "Matte Ceramic Dripper & Mug Set",
+    category: "Lifestyle",
+    price: 48.00,
+    originalPrice: 60.00,
+    rating: 4.5,
+    reviewsCount: 78,
+    badge: null,
+    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=700&auto=format&fit=crop&q=80",
+    description: "Artisan stoneware ceramic set designed for pour-over coffee enthusiasts. Dishwasher and microwave safe.",
+    colors: ["#E5E7EB", "#4B5563"],
+    colorNames: ["Ivory Mist", "Slate Grey"],
+    sizes: ["350 ml"],
+    inStock: true,
+    stockCount: 19,
+    userReviews: [
+      { id: 107, author: "Amy V.", rating: 5, date: "1 week ago", comment: "Brews fantastic morning coffee and looks stunning on the counter." }
+    ]
+  },
+  {
+    id: 7,
+    name: "Ultra-Slim Wireless Power Bank",
+    category: "Electronics",
+    price: 54.99,
+    originalPrice: 70.00,
+    rating: 4.4,
+    reviewsCount: 160,
+    badge: null,
+    image: "https://images.unsplash.com/photo-1609592426861-12f5a5e378f1?w=700&auto=format&fit=crop&q=80",
+    description: "10,000mAh magnetic power bank with MagSafe support and fast 20W PD USB-C charging.",
+    colors: ["#1F2937", "#9CA3AF"],
+    colorNames: ["Matte Black", "Silver"],
+    sizes: ["10,000 mAh"],
+    inStock: false,
+    stockCount: 0,
+    userReviews: [
+      { id: 108, author: "Sam P.", rating: 4, date: "2 weeks ago", comment: "Very compact, charges quickly and fits right into my pocket." }
+    ]
+  },
+  {
+    id: 8,
+    name: "Polarized Clubmaster Sunglasses",
+    category: "Accessories",
+    price: 110.00,
+    originalPrice: 140.00,
+    rating: 4.8,
+    reviewsCount: 215,
+    badge: "Summer Pick",
+    image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=700&auto=format&fit=crop&q=80",
+    description: "UV400 anti-glare polarized lenses mounted inside durable handcrafted acetate and metal frames.",
+    colors: ["#78350F", "#111827"],
+    colorNames: ["Tortoise Shell", "Classic Black"],
+    sizes: ["Standard 51mm"],
+    inStock: true,
+    stockCount: 11,
+    userReviews: [
+      { id: 109, author: "Lucas G.", rating: 5, date: "3 weeks ago", comment: "Sturdy hinges and crystal clear vision without glares." }
+    ]
+  }
+];
+
+const CATEGORIES = ["All", "Electronics", "Accessories", "Footwear", "Lifestyle"];
+
+export default function App() {
+  // Products state (allows reviews to be dynamically added)
+  const [products, setProducts] = useState(() => {
+    const saved = localStorage.getItem("lumen_products");
+    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+  });
+
+  // Navigation & View Filters
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("featured");
+  const [maxPrice, setMaxPrice] = useState(250);
+  
+  // Persistent Cart, Wishlist, Orders
+  const [cart, setCart] = useState(() => {
+    const saved = localStorage.getItem("lumen_cart");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [wishlist, setWishlist] = useState(() => {
+    const saved = localStorage.getItem("lumen_wishlist");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [orders, setOrders] = useState(() => {
+    const saved = localStorage.getItem("lumen_orders");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Modals & Drawers
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
+  const [isOrdersOpen, setIsOrdersOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [modalSelectedColor, setModalSelectedColor] = useState(0);
+  const [modalSelectedSize, setModalSelectedSize] = useState(0);
+  const [modalQuantity, setModalQuantity] = useState(1);
+
+  // New review state in modal
+  const [newReviewAuthor, setNewReviewAuthor] = useState("");
+  const [newReviewComment, setNewReviewComment] = useState("");
+  const [newReviewRating, setNewReviewRating] = useState(5);
+
+  // Checkout Modal & Flow
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [checkoutStep, setCheckoutStep] = useState(1); // 1: Shipping, 2: Payment, 3: Completed
+  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [shippingInfo, setShippingInfo] = useState({
+    fullName: "Alex Parker",
+    email: "alex.parker@example.com",
+    address: "742 Evergreen Terrace",
+    city: "Springfield",
+    postalCode: "97477",
+    country: "United States"
+  });
+  const [paymentInfo, setPaymentInfo] = useState({
+    cardNumber: "4242 •••• •••• 4242",
+    expiry: "12/28",
+    cvv: "789"
+  });
+  const [completedOrder, setCompletedOrder] = useState(null);
+  const [isProcessingOrder, setIsProcessingOrder] = useState(false);
+
+  // Promo code & toast
+  const [couponCode, setCouponCode] = useState("");
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [couponError, setCouponError] = useState("");
+  const [toastMessage, setToastMessage] = useState(null);
+
+  // Sync to LocalStorage
+  useEffect(() => {
+    localStorage.setItem("lumen_cart", JSON.stringify(cart));
+  }, [cart]);
+
+  useEffect(() => {
+    localStorage.setItem("lumen_wishlist", JSON.stringify(wishlist));
+  }, [wishlist]);
+
+  useEffect(() => {
+    localStorage.setItem("lumen_orders", JSON.stringify(orders));
+  }, [orders]);
+
+  useEffect(() => {
+    localStorage.setItem("lumen_products", JSON.stringify(products));
+  }, [products]);
+
+  // Trigger feedback toast
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 2800);
+  };
+
+  // Add to Cart with optional specific attributes
+  const addToCart = (product, quantity = 1, colorIdx = 0, sizeIdx = 0) => {
+    if (!product.inStock) {
+      showToast("This item is currently out of stock.");
+      return;
+    }
+
+    const selectedColorName = product.colorNames ? product.colorNames[colorIdx] : null;
+    const selectedSizeName = product.sizes ? product.sizes[sizeIdx] : null;
+    const itemKey = `${product.id}-${selectedColorName}-${selectedSizeName}`;
+
+    setCart((prev) => {
+      const existing = prev.find((item) => item.cartKey === itemKey);
+      if (existing) {
+        return prev.map((item) =>
+          item.cartKey === itemKey ? { ...item, quantity: item.quantity + quantity } : item
+        );
+      }
+      return [
+        ...prev,
+        {
+          ...product,
+          cartKey: itemKey,
+          selectedColor: selectedColorName,
+          selectedSize: selectedSizeName,
+          quantity
+        }
+      ];
+    });
+    showToast(`Added ${quantity}x "${product.name}" to cart!`);
+  };
+
+  const updateQuantity = (cartKey, delta) => {
+    setCart((prev) =>
+      prev
+        .map((item) => {
+          if (item.cartKey === cartKey) {
+            const newQty = item.quantity + delta;
+            return newQty > 0 ? { ...item, quantity: newQty } : null;
+          }
+          return item;
+        })
+        .filter(Boolean)
+    );
+  };
+
+  const removeFromCart = (cartKey) => {
+    setCart((prev) => prev.filter((item) => item.cartKey !== cartKey));
+    showToast("Item removed from cart");
+  };
+
+  const clearCart = () => {
+    setCart([]);
+    showToast("Cart cleared");
+  };
+
+  // Wishlist toggle
+  const toggleWishlist = (product) => {
+    setWishlist((prev) => {
+      const exists = prev.some((p) => p.id === product.id);
+      if (exists) {
+        showToast(`Removed from favorites`);
+        return prev.filter((p) => p.id !== product.id);
+      } else {
+        showToast(`Saved to favorites!`);
+        return [...prev, product];
+      }
+    });
+  };
+
+  // Promo Code Validation
+  const applyCoupon = (e) => {
+    e.preventDefault();
+    const cleanCode = couponCode.trim().toUpperCase();
+    if (cleanCode === "SAVE20") {
+      setDiscountPercent(0.20);
+      setCouponError("");
+      showToast("🎉 20% discount applied!");
+    } else if (cleanCode === "WELCOME10") {
+      setDiscountPercent(0.10);
+      setCouponError("");
+      showToast("🎉 10% discount applied!");
+    } else {
+      setCouponError("Invalid promo code. Try 'SAVE20' or 'WELCOME10'");
+    }
+  };
+
+  // Review submission
+  const handleAddReview = (e) => {
+    e.preventDefault();
+    if (!newReviewAuthor.trim() || !newReviewComment.trim()) return;
+
+    const newRev = {
+      id: Date.now(),
+      author: newReviewAuthor.trim(),
+      rating: newReviewRating,
+      date: "Just now",
+      comment: newReviewComment.trim()
+    };
+
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (p.id === selectedProduct.id) {
+          const updatedReviews = [newRev, ...(p.userReviews || [])];
+          const newAvgRating = +(
+            updatedReviews.reduce((sum, r) => sum + r.rating, 0) / updatedReviews.length
+          ).toFixed(1);
+          const updated = {
+            ...p,
+            userReviews: updatedReviews,
+            reviewsCount: updatedReviews.length,
+            rating: newAvgRating
+          };
+          setSelectedProduct(updated);
+          return updated;
+        }
+        return p;
+      })
+    );
+
+    setNewReviewAuthor("");
+    setNewReviewComment("");
+    setNewReviewRating(5);
+    showToast("Review submitted successfully!");
+  };
+
+  // Order Placement
+  const handlePlaceOrder = (e) => {
+    e.preventDefault();
+    setIsProcessingOrder(true);
+
+    setTimeout(() => {
+      const orderId = `LM-${Math.floor(100000 + Math.random() * 900000)}`;
+      const orderData = {
+        id: orderId,
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        items: [...cart],
+        subtotal: cartSubtotal,
+        discount: discountAmount,
+        shipping: shippingFee,
+        total: cartTotal,
+        shippingInfo: { ...shippingInfo },
+        paymentMethod: paymentMethod === 'card' ? 'Credit Card' : paymentMethod === 'apple' ? 'Apple Pay' : 'PayPal',
+        status: "Processing"
+      };
+
+      setOrders((prev) => [orderData, ...prev]);
+      setCompletedOrder(orderData);
+      setCart([]);
+      setIsProcessingOrder(false);
+      setCheckoutStep(3); // Step 3: Confirmation
+      showToast("Order placed successfully!");
+    }, 1200);
+  };
+
+  // Price & Cart Calculations
+  const cartSubtotal = useMemo(() => {
+    return cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  }, [cart]);
+
+  const discountAmount = cartSubtotal * discountPercent;
+  const shippingFee = cartSubtotal > 150 || cartSubtotal === 0 ? 0 : 9.99;
+  const cartTotal = Math.max(0, cartSubtotal - discountAmount + shippingFee);
+  const cartItemsCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+
+  // Filter & Sort Logic
+  const filteredProducts = useMemo(() => {
+    return products.filter((item) => {
+      const matchesCategory = activeCategory === "All" || item.category === activeCategory;
+      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesPrice = item.price <= maxPrice;
+      return matchesCategory && matchesSearch && matchesPrice;
+    }).sort((a, b) => {
+      if (sortBy === "price-low") return a.price - b.price;
+      if (sortBy === "price-high") return b.price - a.price;
+      if (sortBy === "rating") return b.rating - a.rating;
+      return 0;
+    });
+  }, [products, activeCategory, searchQuery, maxPrice, sortBy]);
+
+  // Open Product Modal helper
+  const openProductModal = (product) => {
+    setSelectedProduct(product);
+    setModalSelectedColor(0);
+    setModalSelectedSize(0);
+    setModalQuantity(1);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+      {/* Toast Notice */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-950 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700 animate-bounce">
+          <Sparkles className="w-5 h-5 text-indigo-400" />
+          <span className="text-sm font-medium">{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Top Banner */}
+      <div className="bg-gradient-to-r from-indigo-700 via-indigo-800 to-slate-900 text-white text-xs sm:text-sm py-2 px-4 text-center font-medium flex items-center justify-center gap-2">
+        <Sparkles className="w-4 h-4 text-amber-300" />
+        <span>Use promo code <strong className="bg-white/20 px-2 py-0.5 rounded text-amber-200">SAVE20</strong> for 20% off all orders! Free shipping over $150.</span>
+      </div>
+
+      {/* Navigation Header */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+          {/* Brand */}
+          <div 
+            className="flex items-center gap-2.5 cursor-pointer" 
+            onClick={() => { setActiveCategory("All"); setSearchQuery(""); }}
+          >
+            <div className="w-11 h-11 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+              <ShoppingBag className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-indigo-700 to-violet-600 bg-clip-text text-transparent">
+                LUMEN
+              </span>
+              <span className="hidden sm:block text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Store & Living</span>
+            </div>
+          </div>
+
+          {/* Search bar */}
+          <div className="hidden md:flex flex-1 max-w-md mx-6 relative">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search gear, apparel, electronics..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-100 pl-10 pr-9 py-2.5 rounded-full text-sm border border-transparent focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Orders History Button */}
+            <button
+              onClick={() => setIsOrdersOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 text-slate-600 hover:text-indigo-600 rounded-full hover:bg-slate-100 transition text-sm font-semibold"
+              title="Order History"
+            >
+              <Package className="w-5 h-5" />
+              <span className="hidden lg:inline">Orders</span>
+              {orders.length > 0 && (
+                <span className="bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">
+                  {orders.length}
+                </span>
+              )}
+            </button>
+
+            {/* Wishlist Button */}
+            <button 
+              onClick={() => setIsWishlistOpen(true)}
+              className="p-2.5 text-slate-600 hover:text-rose-500 rounded-full hover:bg-slate-100 transition relative"
+              title="Saved items"
+            >
+              <Heart className="w-5 h-5" />
+              {wishlist.length > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {wishlist.length}
+                </span>
+              )}
+            </button>
+
+            {/* Cart Button */}
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="flex items-center gap-2 bg-slate-900 text-white hover:bg-indigo-600 px-4 py-2.5 rounded-full shadow-md transition-all active:scale-95"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              <span className="text-sm font-semibold hidden sm:inline">Cart</span>
+              <span className="bg-indigo-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                {cartItemsCount}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile search bar */}
+        <div className="p-3 border-t border-slate-100 md:hidden bg-white">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-slate-100 pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100"
+            />
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Banner */}
+      <section className="bg-gradient-to-b from-indigo-50/70 via-white to-transparent py-10 sm:py-14 border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-8">
+          <div className="max-w-xl space-y-4">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase text-indigo-700 bg-indigo-100/80 px-3.5 py-1.5 rounded-full">
+              <Sparkles className="w-3.5 h-3.5" /> High Precision Goods
+            </span>
+            <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+              Curated Essentials for modern everyday life.
+            </h1>
+            <p className="text-slate-600 text-base sm:text-lg">
+              Explore award-winning audio, industrial design apparel, and everyday carry built to last generations.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full sm:w-auto">
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 flex items-center gap-3">
+              <Truck className="w-7 h-7 text-indigo-600" />
+              <div className="text-left">
+                <p className="text-xs text-slate-400 font-medium">Free Shipping</p>
+                <p className="text-sm font-bold text-slate-800">Orders $150+</p>
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 flex items-center gap-3">
+              <ShieldCheck className="w-7 h-7 text-indigo-600" />
+              <div className="text-left">
+                <p className="text-xs text-slate-400 font-medium">Guarantee</p>
+                <p className="text-sm font-bold text-slate-800">2-Year Cover</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        {/* Category Pills & Filters */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+          {/* Categories */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition whitespace-nowrap ${
+                  activeCategory === cat
+                    ? "bg-slate-900 text-white shadow"
+                    : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Controls: Price range & Sorting */}
+          <div className="flex items-center flex-wrap gap-4 text-sm">
+            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200">
+              <span className="text-slate-500 font-medium text-xs">Max: <strong className="text-slate-900">${maxPrice}</strong></span>
+              <input 
+                type="range" 
+                min="30" 
+                max="260" 
+                step="10"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(Number(e.target.value))}
+                className="accent-indigo-600 cursor-pointer w-24 sm:w-28"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-slate-400" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-white border border-slate-200 rounded-xl py-2 px-3 font-medium text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              >
+                <option value="featured">Sort: Featured</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="rating">Highest Rated</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Product Count Overview */}
+        <div className="py-4 flex justify-between items-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <span>Showing {filteredProducts.length} Products</span>
+          {activeCategory !== "All" && (
+            <span className="text-indigo-600">Category: {activeCategory}</span>
+          )}
+        </div>
+
+        {/* Product Grid */}
+        {filteredProducts.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
+            <Package className="w-14 h-14 text-slate-300 mx-auto mb-3" />
+            <h3 className="text-lg font-bold text-slate-800">No matching products found</h3>
+            <p className="text-slate-500 text-sm mt-1 max-w-sm mx-auto">
+              We couldn't find anything matching your filters. Try adjusting price range or clearing search.
+            </p>
+            <button 
+              onClick={() => { setActiveCategory("All"); setSearchQuery(""); setMaxPrice(260); }}
+              className="mt-5 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
+            >
+              Reset All Filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredProducts.map((product) => {
+              const isWishlisted = wishlist.some((p) => p.id === product.id);
+              return (
+                <div
+                  key={product.id}
+                  className="group bg-white rounded-2xl border border-slate-200/90 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                >
+                  {/* Image container */}
+                  <div 
+                    className="relative aspect-square overflow-hidden bg-slate-100 cursor-pointer"
+                    onClick={() => openProductModal(product)}
+                  >
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                    />
+
+                    {/* Tag Badge */}
+                    {product.badge && (
+                      <span className="absolute top-3 left-3 bg-slate-950/85 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        {product.badge}
+                      </span>
+                    )}
+
+                    {!product.inStock && (
+                      <span className="absolute top-3 left-3 bg-rose-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        Out of stock
+                      </span>
+                    )}
+
+                    {/* Favorite Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWishlist(product);
+                      }}
+                      className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-md rounded-full text-slate-600 hover:text-rose-500 transition shadow hover:scale-110"
+                      title="Save to wishlist"
+                    >
+                      <Heart className={`w-4 h-4 ${isWishlisted ? "fill-rose-500 text-rose-500" : ""}`} />
+                    </button>
+
+                    {/* Quick View Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openProductModal(product);
+                      }}
+                      className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-white/95 text-slate-800 text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 hover:bg-slate-900 hover:text-white"
+                    >
+                      <Eye className="w-3.5 h-3.5" /> Quick View
+                    </button>
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                        <span className="font-medium">{product.category}</span>
+                        <div className="flex items-center gap-1 text-amber-500 font-semibold">
+                          <Star className="w-3.5 h-3.5 fill-current" />
+                          <span>{product.rating}</span>
+                          <span className="text-slate-400">({product.reviewsCount})</span>
+                        </div>
+                      </div>
+
+                      <h3
+                        onClick={() => openProductModal(product)}
+                        className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1 cursor-pointer text-sm sm:text-base"
+                      >
+                        {product.name}
+                      </h3>
+
+                      <p className="text-xs text-slate-500 line-clamp-2 mt-1">
+                        {product.description}
+                      </p>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <div>
+                        <span className="text-lg font-black text-slate-900">${product.price.toFixed(2)}</span>
+                        {product.originalPrice && (
+                          <span className="ml-2 text-xs text-slate-400 line-through">
+                            ${product.originalPrice.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => addToCart(product, 1)}
+                        disabled={!product.inStock}
+                        className={`p-2.5 rounded-xl font-medium text-xs flex items-center gap-1.5 transition-all ${
+                          product.inStock
+                            ? "bg-slate-900 text-white hover:bg-indigo-600 hover:shadow-lg active:scale-95"
+                            : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                        }`}
+                        title={product.inStock ? "Add to cart" : "Out of stock"}
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </main>
+
+      {/* Cart Drawer */}
+      {isCartOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsCartOpen(false)} />
+
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col">
+              {/* Drawer Header */}
+              <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-indigo-600" />
+                  <h2 className="text-lg font-bold text-slate-900">Your Cart ({cartItemsCount})</h2>
+                </div>
+                <div className="flex items-center gap-3">
+                  {cart.length > 0 && (
+                    <button onClick={clearCart} className="text-xs text-slate-400 hover:text-rose-500">
+                      Empty
+                    </button>
+                  )}
+                  <button onClick={() => setIsCartOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Drawer Items */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {cart.length === 0 ? (
+                  <div className="text-center py-20">
+                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                      <ShoppingCart className="w-8 h-8" />
+                    </div>
+                    <p className="text-slate-700 font-bold">Your shopping cart is empty</p>
+                    <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">Discover our collection and add your favorite items to get started!</p>
+                  </div>
+                ) : (
+                  cart.map((item) => (
+                    <div key={item.cartKey} className="flex gap-4 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
+                      <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-xl bg-white" />
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-start">
+                            <h4 className="text-sm font-bold text-slate-900 line-clamp-1">{item.name}</h4>
+                            <button onClick={() => removeFromCart(item.cartKey)} className="text-slate-400 hover:text-rose-500 pl-2">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                          {(item.selectedColor || item.selectedSize) && (
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              {item.selectedColor} {item.selectedSize ? `• ${item.selectedSize}` : ""}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-sm font-bold text-slate-900">${item.price.toFixed(2)}</span>
+                          
+                          {/* Quantity control */}
+                          <div className="flex items-center border border-slate-200 bg-white rounded-lg">
+                            <button 
+                              onClick={() => updateQuantity(item.cartKey, -1)} 
+                              className="px-2 py-1 text-slate-600 hover:bg-slate-100 rounded-l-lg"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <span className="px-2 text-xs font-bold text-slate-800">{item.quantity}</span>
+                            <button 
+                              onClick={() => updateQuantity(item.cartKey, 1)} 
+                              className="px-2 py-1 text-slate-600 hover:bg-slate-100 rounded-r-lg"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Drawer Footer */}
+              {cart.length > 0 && (
+                <div className="p-6 border-t border-slate-100 bg-slate-50/90 space-y-4">
+                  {/* Coupon Input */}
+                  <form onSubmit={applyCoupon} className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Promo code (SAVE20)"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      className="flex-1 px-3 py-2 text-xs uppercase bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                    />
+                    <button type="submit" className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition">
+                      Apply
+                    </button>
+                  </form>
+                  {couponError && <p className="text-xs text-rose-500">{couponError}</p>}
+                  {discountPercent > 0 && (
+                    <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold bg-emerald-50 p-2 rounded-lg">
+                      <Check className="w-4 h-4" /> Coupon Applied: {(discountPercent * 100)}% Discount
+                    </div>
+                  )}
+
+                  {/* Calculations */}
+                  <div className="space-y-1.5 text-xs text-slate-600">
+                    <div className="flex justify-between">
+                      <span>Subtotal</span>
+                      <span className="font-semibold text-slate-900">${cartSubtotal.toFixed(2)}</span>
+                    </div>
+                    {discountAmount > 0 && (
+                      <div className="flex justify-between text-emerald-600 font-medium">
+                        <span>Discount</span>
+                        <span>-${discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span>Shipping (Free over $150)</span>
+                      <span className="font-semibold text-slate-900">
+                        {shippingFee === 0 ? "FREE" : `$${shippingFee.toFixed(2)}`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-200">
+                      <span>Total</span>
+                      <span>${cartTotal.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setIsCartOpen(false);
+                      setCheckoutStep(1);
+                      setIsCheckoutOpen(true);
+                    }}
+                    className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 active:scale-95 transition"
+                  >
+                    Proceed to Checkout <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Orders History Drawer / Modal */}
+      {isOrdersOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl relative max-h-[85vh] flex flex-col">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Package className="w-5 h-5 text-indigo-600" />
+                <h3 className="font-bold text-lg text-slate-900">Order History ({orders.length})</h3>
+              </div>
+              <button onClick={() => setIsOrdersOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto py-4 space-y-4 flex-1">
+              {orders.length === 0 ? (
+                <div className="text-center py-12 text-slate-400 text-sm">
+                  <Clock className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                  <p>You haven't placed any orders yet.</p>
+                </div>
+              ) : (
+                orders.map((ord) => (
+                  <div key={ord.id} className="p-4 border border-slate-200 rounded-2xl bg-slate-50/50 space-y-3">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-slate-900">Order {ord.id}</span>
+                      <span className="bg-amber-100 text-amber-800 font-bold px-2.5 py-0.5 rounded-full text-[10px]">
+                        {ord.status}
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      Placed on {ord.date} • Paid with {ord.paymentMethod}
+                    </div>
+                    
+                    <div className="space-y-1.5 border-t border-slate-100 pt-2">
+                      {ord.items.map((it, idx) => (
+                        <div key={idx} className="flex justify-between text-xs text-slate-700">
+                          <span>{it.quantity}x {it.name}</span>
+                          <span className="font-semibold">${(it.price * it.quantity).toFixed(2)}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex justify-between items-center pt-2 border-t border-slate-200 text-sm font-bold text-slate-900">
+                      <span>Total</span>
+                      <span>${ord.total.toFixed(2)}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Wishlist Modal */}
+      {isWishlistOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative max-h-[80vh] flex flex-col">
+            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
+                <h3 className="font-bold text-lg text-slate-900">Saved Wishlist ({wishlist.length})</h3>
+              </div>
+              <button onClick={() => setIsWishlistOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto py-4 space-y-3 flex-1">
+              {wishlist.length === 0 ? (
+                <div className="text-center py-12 text-slate-400 text-sm">
+                  You haven't saved any items to your wishlist yet.
+                </div>
+              ) : (
+                wishlist.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between gap-3 p-3 border border-slate-100 rounded-2xl bg-slate-50/50">
+                    <img src={item.image} alt={item.name} className="w-14 h-14 object-cover rounded-xl bg-white" />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold truncate text-slate-900">{item.name}</h4>
+                      <p className="text-xs text-indigo-600 font-bold">${item.price.toFixed(2)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          addToCart(item, 1);
+                          toggleWishlist(item);
+                        }}
+                        className="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-indigo-600 transition"
+                      >
+                        Move to Cart
+                      </button>
+                      <button onClick={() => toggleWishlist(item)} className="p-1.5 text-slate-400 hover:text-rose-500">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Product Detail Modal */}
+      {selectedProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl relative my-8">
+            <button
+              onClick={() => setSelectedProduct(null)}
+              className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur-md rounded-full text-slate-500 hover:text-slate-900 shadow"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="grid grid-cols-1 md:grid-cols-2">
+              {/* Product Image */}
+              <div className="bg-slate-100 aspect-square md:aspect-auto">
+                <img src={selectedProduct.image} alt={selectedProduct.name} className="w-full h-full object-cover" />
+              </div>
+
+              {/* Product Info & Controls */}
+              <div className="p-6 md:p-8 flex flex-col justify-between max-h-[85vh] overflow-y-auto">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 uppercase tracking-wider">
+                    {selectedProduct.category}
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">{selectedProduct.name}</h2>
+                  
+                  {/* Rating */}
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="flex text-amber-400">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className={`w-4 h-4 ${i < Math.round(selectedProduct.rating) ? "fill-current" : "text-slate-300"}`} />
+                      ))}
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">{selectedProduct.rating}</span>
+                    <span className="text-xs text-slate-400">({selectedProduct.reviewsCount} reviews)</span>
+                  </div>
+
+                  <p className="text-slate-600 text-sm mt-4 leading-relaxed">{selectedProduct.description}</p>
+
+                  {/* Color Selector */}
+                  {selectedProduct.colors && (
+                    <div className="mt-5">
+                      <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-2">
+                        Color: <span className="text-slate-900">{selectedProduct.colorNames ? selectedProduct.colorNames[modalSelectedColor] : ""}</span>
+                      </span>
+                      <div className="flex gap-2">
+                        {selectedProduct.colors.map((color, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setModalSelectedColor(idx)}
+                            style={{ backgroundColor: color }}
+                            className={`w-7 h-7 rounded-full border-2 transition-transform shadow ${
+                              modalSelectedColor === idx ? "scale-110 border-indigo-600 ring-2 ring-indigo-200" : "border-white"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Size Selector */}
+                  {selectedProduct.sizes && (
+                    <div className="mt-5">
+                      <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-2">Size / Variant</span>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedProduct.sizes.map((sz, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setModalSelectedSize(idx)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+                              modalSelectedSize === idx
+                                ? "bg-slate-900 text-white border-slate-900"
+                                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
+                            }`}
+                          >
+                            {sz}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Quantity selector */}
+                  <div className="mt-5 flex items-center gap-3">
+                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Quantity:</span>
+                    <div className="flex items-center border border-slate-200 rounded-xl bg-white">
+                      <button 
+                        onClick={() => setModalQuantity(Math.max(1, modalQuantity - 1))}
+                        className="px-2.5 py-1 text-slate-600 hover:bg-slate-100 rounded-l-xl"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="px-3 text-xs font-bold text-slate-900">{modalQuantity}</span>
+                      <button 
+                        onClick={() => setModalQuantity(modalQuantity + 1)}
+                        className="px-2.5 py-1 text-slate-600 hover:bg-slate-100 rounded-r-xl"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                    {selectedProduct.stockCount > 0 && (
+                      <span className="text-xs text-emerald-600 font-medium">In Stock ({selectedProduct.stockCount} left)</span>
+                    )}
+                  </div>
+
+                  {/* Customer Reviews Section */}
+                  <div className="mt-8 pt-6 border-t border-slate-100">
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3">Customer Reviews</h4>
+                    <div className="space-y-3 max-h-40 overflow-y-auto pr-1">
+                      {selectedProduct.userReviews && selectedProduct.userReviews.length > 0 ? (
+                        selectedProduct.userReviews.map((rev) => (
+                          <div key={rev.id} className="text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="font-bold text-slate-800">{rev.author}</span>
+                              <span className="text-[10px] text-slate-400">{rev.date}</span>
+                            </div>
+                            <div className="flex text-amber-400 mb-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} className={`w-3 h-3 ${i < rev.rating ? "fill-current" : "text-slate-300"}`} />
+                              ))}
+                            </div>
+                            <p className="text-slate-600">{rev.comment}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-xs text-slate-400">No reviews yet for this product.</p>
+                      )}
+                    </div>
+
+                    {/* Add Review Form */}
+                    <form onSubmit={handleAddReview} className="mt-4 bg-slate-50 p-3 rounded-xl border border-slate-200/60 space-y-2">
+                      <span className="text-[11px] font-bold text-slate-700 block">Leave a Review</span>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Your Name"
+                          required
+                          value={newReviewAuthor}
+                          onChange={(e) => setNewReviewAuthor(e.target.value)}
+                          className="flex-1 text-xs px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg focus:outline-none"
+                        />
+                        <select
+                          value={newReviewRating}
+                          onChange={(e) => setNewReviewRating(Number(e.target.value))}
+                          className="text-xs px-2 py-1.5 bg-white border border-slate-200 rounded-lg focus:outline-none font-semibold text-amber-500"
+                        >
+                          <option value="5">5 ★</option>
+                          <option value="4">4 ★</option>
+                          <option value="3">3 ★</option>
+                          <option value="2">2 ★</option>
+                          <option value="1">1 ★</option>
+                        </select>
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Write feedback..."
+                          required
+                          value={newReviewComment}
+                          onChange={(e) => setNewReviewComment(e.target.value)}
+                          className="flex-1 text-xs px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg focus:outline-none"
+                        />
+                        <button type="submit" className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800">
+                          <Send className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+
+                {/* Modal Footer Controls */}
+                <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="text-2xl font-black text-slate-900">${(selectedProduct.price * modalQuantity).toFixed(2)}</span>
+                    {selectedProduct.originalPrice && (
+                      <span className="text-sm text-slate-400 line-through ml-2">
+                        ${(selectedProduct.originalPrice * modalQuantity).toFixed(2)}
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      addToCart(selectedProduct, modalQuantity, modalSelectedColor, modalSelectedSize);
+                      setSelectedProduct(null);
+                    }}
+                    disabled={!selectedProduct.inStock}
+                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-100 flex items-center gap-2 active:scale-95 transition"
+                  >
+                    <ShoppingCart className="w-4 h-4" /> Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Multistep Checkout Modal */}
+      {isCheckoutOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative my-8">
+            <button
+              onClick={() => {
+                setIsCheckoutOpen(false);
+                setCheckoutStep(1);
+              }}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Stepper Header */}
+            {checkoutStep < 3 && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`text-xs font-bold uppercase tracking-wider ${checkoutStep >= 1 ? "text-indigo-600" : "text-slate-400"}`}>
+                    1. Shipping
+                  </span>
+                  <span className="text-slate-300">———</span>
+                  <span className={`text-xs font-bold uppercase tracking-wider ${checkoutStep >= 2 ? "text-indigo-600" : "text-slate-400"}`}>
+                    2. Payment
+                  </span>
+                </div>
+                <h3 className="text-xl font-black text-slate-900">
+                  {checkoutStep === 1 ? "Shipping Details" : "Select Payment Method"}
+                </h3>
+              </div>
+            )}
+
+            {/* Step 1: Shipping Address Form */}
+            {checkoutStep === 1 && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setCheckoutStep(2);
+                }}
+                className="space-y-3.5 text-xs font-semibold text-slate-700"
+              >
+                <div>
+                  <label className="block mb-1">Full Name</label>
+                  <input
+                    required
+                    type="text"
+                    value={shippingInfo.fullName}
+                    onChange={(e) => setShippingInfo({ ...shippingInfo, fullName: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-normal focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-1">Email Address</label>
+                  <input
+                    required
+                    type="email"
+                    value={shippingInfo.email}
+                    onChange={(e) => setShippingInfo({ ...shippingInfo, email: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-normal focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-1">Street Address</label>
+                  <input
+                    required
+                    type="text"
+                    value={shippingInfo.address}
+                    onChange={(e) => setShippingInfo({ ...shippingInfo, address: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-normal focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block mb-1">City</label>
+                    <input
+                      required
+                      type="text"
+                      value={shippingInfo.city}
+                      onChange={(e) => setShippingInfo({ ...shippingInfo, city: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-normal focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1">Postal Code</label>
+                    <input
+                      required
+                      type="text"
+                      value={shippingInfo.postalCode}
+                      onChange={(e) => setShippingInfo({ ...shippingInfo, postalCode: e.target.value })}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-normal focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                  <div className="text-slate-500 text-xs font-normal">
+                    Total: <strong className="text-slate-900">${cartTotal.toFixed(2)}</strong>
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-slate-900 hover:bg-indigo-600 text-white font-bold rounded-xl text-sm flex items-center gap-2 transition"
+                  >
+                    Continue to Payment <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Step 2: Payment Details */}
+            {checkoutStep === 2 && (
+              <form onSubmit={handlePlaceOrder} className="space-y-4 text-xs font-semibold text-slate-700">
+                {/* Method selector */}
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("card")}
+                    className={`p-3 rounded-xl border text-center transition ${
+                      paymentMethod === "card"
+                        ? "border-indigo-600 bg-indigo-50/50 text-indigo-700 font-bold"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <CreditCard className="w-5 h-5 mx-auto mb-1" /> Card
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("apple")}
+                    className={`p-3 rounded-xl border text-center transition ${
+                      paymentMethod === "apple"
+                        ? "border-indigo-600 bg-indigo-50/50 text-indigo-700 font-bold"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span className="block text-base mb-0.5"></span> Apple Pay
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("paypal")}
+                    className={`p-3 rounded-xl border text-center transition ${
+                      paymentMethod === "paypal"
+                        ? "border-indigo-600 bg-indigo-50/50 text-indigo-700 font-bold"
+                        : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span className="block text-sm font-black mb-1">P</span> PayPal
+                  </button>
+                </div>
+
+                {paymentMethod === "card" ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block mb-1">Card Number</label>
+                      <input
+                        required
+                        type="text"
+                        value={paymentInfo.cardNumber}
+                        onChange={(e) => setPaymentInfo({ ...paymentInfo, cardNumber: e.target.value })}
+                        className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-normal focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block mb-1">Expiry Date</label>
+                        <input
+                          required
+                          type="text"
+                          value={paymentInfo.expiry}
+                          onChange={(e) => setPaymentInfo({ ...paymentInfo, expiry: e.target.value })}
+                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-normal focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                        />
+                      </div>
+                      <div>
+                        <label className="block mb-1">Security Code (CVV)</label>
+                        <input
+                          required
+                          type="text"
+                          value={paymentInfo.cvv}
+                          onChange={(e) => setPaymentInfo({ ...paymentInfo, cvv: e.target.value })}
+                          className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-normal focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center text-slate-600">
+                    <p className="font-semibold text-sm">
+                      {paymentMethod === 'apple' ? 'Apple Pay ready' : 'PayPal account linked'}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">One-click simulated authorization</p>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setCheckoutStep(1)}
+                    className="text-xs font-bold text-slate-500 hover:text-slate-800 flex items-center gap-1"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={isProcessingOrder}
+                    className="px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-indigo-100 active:scale-95 transition"
+                  >
+                    {isProcessingOrder ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" /> Authorizing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4 h-4" /> Pay ${cartTotal.toFixed(2)}
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Step 3: Order Confirmation */}
+            {checkoutStep === 3 && completedOrder && (
+              <div className="text-center py-4 space-y-4">
+                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-10 h-10" />
+                </div>
+                <h3 className="text-2xl font-black text-slate-900">Order Confirmed!</h3>
+                <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                  Your order has been authorized and dispatched to fulfillment. A receipt has been dispatched to <strong className="text-slate-700">{completedOrder.shippingInfo.email}</strong>.
+                </p>
+
+                <div className="p-4 bg-slate-50 rounded-2xl text-left text-xs space-y-1.5 text-slate-600 border border-slate-100">
+                  <div className="flex justify-between font-bold text-slate-900">
+                    <span>Order Tracking:</span>
+                    <span className="text-indigo-600">{completedOrder.id}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Shipping To:</span>
+                    <span>{completedOrder.shippingInfo.fullName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Address:</span>
+                    <span className="truncate max-w-[200px]">{completedOrder.shippingInfo.address}, {completedOrder.shippingInfo.city}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-slate-900 pt-1 border-t border-slate-200">
+                    <span>Total Paid:</span>
+                    <span className="text-emerald-600 font-black">${completedOrder.total.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setIsCheckoutOpen(false);
+                      setIsOrdersOpen(true);
+                    }}
+                    className="flex-1 py-3 bg-white border border-slate-200 text-slate-800 rounded-xl font-bold text-xs hover:bg-slate-50"
+                  >
+                    View in Orders
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsCheckoutOpen(false);
+                      setCheckoutStep(1);
+                    }}
+                    className="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold text-xs hover:bg-slate-800"
+                  >
+                    Continue Shopping
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="bg-slate-900 text-slate-400 text-xs py-12 border-t border-slate-800 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="space-y-3">
+            <span className="text-xl font-black text-white">LUMEN</span>
+            <p className="leading-relaxed">Crafting high-fidelity lifestyle audio, tech apparel and everyday modern carry essentials.</p>
+          </div>
+          <div>
+            <h5 className="font-bold text-white mb-3 uppercase tracking-wider text-[11px]">Shop Categories</h5>
+            <ul className="space-y-2">
+              <li onClick={() => setActiveCategory("Electronics")} className="hover:text-white cursor-pointer">Electronics</li>
+              <li onClick={() => setActiveCategory("Accessories")} className="hover:text-white cursor-pointer">Accessories</li>
+              <li onClick={() => setActiveCategory("Footwear")} className="hover:text-white cursor-pointer">Footwear</li>
+              <li onClick={() => setActiveCategory("Lifestyle")} className="hover:text-white cursor-pointer">Lifestyle</li>
+            </ul>
+          </div>
+          <div>
+            <h5 className="font-bold text-white mb-3 uppercase tracking-wider text-[11px]">Help & Service</h5>
+            <ul className="space-y-2">
+              <li onClick={() => setIsOrdersOpen(true)} className="hover:text-white cursor-pointer">Order Status</li>
+              <li className="hover:text-white cursor-pointer">Shipping & Returns</li>
+              <li className="hover:text-white cursor-pointer">Warranty Protection</li>
+              <li className="hover:text-white cursor-pointer">Privacy Policy</li>
+            </ul>
+          </div>
+          <div>
+            <h5 className="font-bold text-white mb-3 uppercase tracking-wider text-[11px]">Newsletter</h5>
+            <p className="mb-2">Subscribe to receive discounts and product drop alerts.</p>
+            <div className="flex">
+              <input 
+                type="email" 
+                placeholder="your.email@example.com" 
+                className="bg-slate-800 text-white px-3 py-2 rounded-l-xl text-xs w-full focus:outline-none" 
+              />
+              <button 
+                onClick={() => showToast("Subscribed to the newsletter!")}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-r-xl font-bold"
+              >
+                Join
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-6 border-t border-slate-800 text-center text-slate-500">
+          © {new Date().getFullYear()} LUMEN Storefront. All features fully interactive.
+        </div>
+      </footer>
+    </div>
+  );
+}
